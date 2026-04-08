@@ -157,7 +157,12 @@ router.post(
 
       const returnTo = req.session.returnTo || '/dashboard';
       delete req.session.returnTo;
-      res.redirect(returnTo);
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          return res.render('login', { errors: ['Login failed. Please try again.'], old });
+        }
+        res.redirect(returnTo);
+      });
     });
   }
 );
