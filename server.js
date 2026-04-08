@@ -4,7 +4,7 @@
  *
  * Starts a full-stack web server with:
  *   - Session-based authentication (express-session)
- *   - SQLite database via better-sqlite3
+ *   - Supabase (PostgreSQL) database via @supabase/supabase-js
  *   - EJS server-side rendering
  *   - CSRF protection via synchronizer token pattern (session-stored)
  *   - Routes: /, /signup, /login, /logout, /dashboard, /generator,
