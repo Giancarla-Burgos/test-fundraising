@@ -25,7 +25,7 @@ router.get('/signup', (req, res) => {
 router.post(
   '/signup',
   [
-    body('name').trim().notEmpty().withMessage('Name is required.').escape(),
+    body('name').trim().notEmpty().withMessage('Name is required.'),
     body('email')
       .trim()
       .isEmail()
@@ -66,7 +66,9 @@ router.post(
       req.session.userName = name;
       req.session.save((err) => {
         if (err) {
-          return res.render('signup', { errors: ['Sign up failed. Please try again.'], old });
+          // Account was created successfully; send to login so the user can sign in
+          console.error('Session save error after signup:', err);
+          return res.redirect('/login');
         }
         res.redirect('/dashboard');
       });
