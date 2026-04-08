@@ -191,9 +191,14 @@ async function savePlan(plan, btnId) {
     const data = await resp.json();
 
     if (resp.ok && data.success) {
+      const link = document.createElement('a');
+      link.href = '/dashboard';
+      link.textContent = 'Go to Dashboard →';
+      link.style.cssText = 'color:inherit;font-weight:700;';
       statusEl.className = 'save-status';
-      statusEl.textContent = '✅ Playbook saved! View it in your dashboard.';
+      statusEl.textContent = '✅ Playbook saved! ';
       statusEl.classList.remove('hidden');
+      statusEl.appendChild(link);
       btn.textContent = '✓ Saved';
       // Also update bottom button
       const bottomBtn = document.getElementById('save-plan-btn-bottom');
