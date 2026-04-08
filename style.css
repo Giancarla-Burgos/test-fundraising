@@ -221,12 +221,47 @@ a:hover { text-decoration: underline; }
   margin-bottom: 28px;
 }
 
+.optional-fields {
+  margin-bottom: 28px;
+}
+
+.optional-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #888);
+  margin-bottom: 12px;
+}
+
+.optional-fields .form-grid {
+  margin-bottom: 0;
+}
+
 .field { display: flex; flex-direction: column; gap: 8px; }
+
+.field-wide { grid-column: 1 / -1; }
 
 .field label {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
+}
+
+.field input[type="text"] {
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  font-size: 0.95rem;
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field input[type="text"]::placeholder { color: #aaa; }
+.field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,94,244,0.12);
 }
 
 .field select {

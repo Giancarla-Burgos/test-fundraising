@@ -48,7 +48,7 @@ function getFitBadge(org, timeline, goal) {
 
 // ── Strategy ────────────────────────────────────────────────────────────────
 
-function getStrategy(org, goal, timeline, priority) {
+function getStrategy(org, goal, timeline, priority, mission, stage) {
   const goalN = parseInt(goal, 10);
 
   const mixes = {
@@ -72,7 +72,19 @@ function getStrategy(org, goal, timeline, priority) {
     ? 'For a $10,000 goal, you will need multiple channels working in parallel.'
     : 'For a $25,000+ goal, prioritize grants and corporate sponsors alongside individual donors.';
 
-  return `Focus on a ${mixes[priority] || mixes.mixed} ${urgency} ${scale}`;
+  const missionNote = mission
+    ? ` Your focus on "${mission}" gives you a clear story to lead with in every ask.`
+    : '';
+
+  const stageNote = stage === 'starting'
+    ? ' Since you are just starting, prioritize building your contact list and crafting your pitch before sending anything.'
+    : stage === 'somedonors'
+    ? ' Since you already have some donors, start by re-engaging them — warm contacts convert fastest.'
+    : stage === 'done1'
+    ? ' Having run a campaign before is a real advantage. Lean on past donors and lessons learned to move faster this time.'
+    : '';
+
+  return `Focus on a ${mixes[priority] || mixes.mixed} ${urgency} ${scale}${missionNote}${stageNote}`;
 }
 
 // ── Timeline ────────────────────────────────────────────────────────────────
@@ -103,7 +115,7 @@ function getTimeline(timeline) {
 
 // ── Email templates ─────────────────────────────────────────────────────────
 
-function getEmail(org, goal, priority) {
+function getEmail(org, goal, priority, mission) {
   const orgPhrase = {
     student: 'our student organization',
     nonprofit: 'our nonprofit',
@@ -118,11 +130,13 @@ function getEmail(org, goal, priority) {
     campus: 'expand our reach and deliver meaningful programming',
   }[org] || 'advance our mission';
 
-  return `Subject: Supporting [Mission] — A Quick Ask
+  const missionLabel = mission || '[mission or project name]';
+
+  return `Subject: Supporting ${mission ? mission : '[Mission]'} — A Quick Ask
 
 Hi [Name],
 
-I hope you're doing well! I'm reaching out because ${orgPhrase} is raising support for [mission or project name], and I immediately thought of you.
+I hope you're doing well! I'm reaching out because ${orgPhrase} is raising support for ${missionLabel}, and I immediately thought of you.
 
 We're working toward a goal of ${GOAL_LABELS[goal] || 'our funding target'} to ${impactPhrase}. Your contribution — at any level — would make a real difference.
 
@@ -188,10 +202,13 @@ function getGrants(org, priority) {
 
 // ── Checklist ───────────────────────────────────────────────────────────────
 
-function getChecklist(goal, timeline) {
+function getChecklist(goal, timeline, mission) {
+  const missionItem = mission
+    ? `☐ Finalize your mission pitch: "${mission}"`
+    : '☐ Write a clear 1-paragraph mission statement';
   const items = [
     '☐ Define your funding goal and set a deadline',
-    '☐ Write a clear 1-paragraph mission statement',
+    missionItem,
     '☐ Collect 2–3 concrete impact metrics',
     '☐ Build a donor/prospect spreadsheet (start with 30+ names)',
     '☐ Draft your outreach email using the template above',
@@ -289,7 +306,7 @@ function setupCopyButtons() {
 // ── Full plan text ──────────────────────────────────────────────────────────
 
 function buildFullPlanText(inputs) {
-  const { org, goal, timeline, priority } = inputs;
+  const { org, goal, timeline, priority, mission, stage } = inputs;
   const lines = [];
 
   lines.push('══════════════════════════════════════');
@@ -300,6 +317,7 @@ function buildFullPlanText(inputs) {
   lines.push(`Funding goal:   ${GOAL_LABELS[goal]}`);
   lines.push(`Time horizon:   ${TIMELINE_LABELS[timeline]}`);
   lines.push(`Priority:       ${PRIORITY_LABELS[priority]}`);
+  if (mission) lines.push(`Mission:        ${mission}`);
   lines.push('');
 
   lines.push('── WHAT TO DO TODAY ──');
@@ -307,7 +325,7 @@ function buildFullPlanText(inputs) {
   lines.push('');
 
   lines.push('── RECOMMENDED STRATEGY ──');
-  lines.push(getStrategy(org, goal, timeline, priority));
+  lines.push(getStrategy(org, goal, timeline, priority, mission, stage));
   lines.push('');
 
   lines.push('── ACTION TIMELINE ──');
@@ -315,7 +333,7 @@ function buildFullPlanText(inputs) {
   lines.push('');
 
   lines.push('── DONOR OUTREACH TEMPLATE ──');
-  lines.push(getEmail(org, goal, priority));
+  lines.push(getEmail(org, goal, priority, mission));
   lines.push('');
 
   lines.push('── GRANT STARTER LIST ──');
@@ -323,7 +341,7 @@ function buildFullPlanText(inputs) {
   lines.push('');
 
   lines.push('── CHECKLIST ──');
-  getChecklist(goal, timeline).forEach(c => lines.push(c));
+  getChecklist(goal, timeline, mission).forEach(c => lines.push(c));
   lines.push('');
 
   lines.push('══════════════════════════════════════');
@@ -336,7 +354,7 @@ function buildFullPlanText(inputs) {
 // ── Generate plan ────────────────────────────────────────────────────────────
 
 function generatePlan(inputs) {
-  const { org, goal, timeline, priority } = inputs;
+  const { org, goal, timeline, priority, mission, stage } = inputs;
 
   // Fit badge
   document.getElementById('fit-badge').textContent = getFitBadge(org, timeline, parseInt(goal, 10));
@@ -345,19 +363,19 @@ function generatePlan(inputs) {
   renderList(document.getElementById('today-content'), getTodayActions(org, goal, priority));
 
   // Strategy
-  document.getElementById('strategy-content').textContent = getStrategy(org, goal, timeline, priority);
+  document.getElementById('strategy-content').textContent = getStrategy(org, goal, timeline, priority, mission, stage);
 
   // Timeline
   renderTimeline(document.getElementById('timeline-content'), getTimeline(timeline));
 
   // Email
-  document.getElementById('email-content').textContent = getEmail(org, goal, priority);
+  document.getElementById('email-content').textContent = getEmail(org, goal, priority, mission);
 
   // Grants
   renderList(document.getElementById('grants-content'), getGrants(org, priority));
 
   // Checklist
-  renderList(document.getElementById('checklist-content'), getChecklist(goal, timeline));
+  renderList(document.getElementById('checklist-content'), getChecklist(goal, timeline, mission));
 
   // Show output, hide empty state
   document.getElementById('empty-state').classList.add('hidden');
@@ -383,6 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
       goal: form.goal.value,
       timeline: form.timeline.value,
       priority: form.priority.value,
+      mission: (form.mission.value || '').trim(),
+      stage: form.stage.value,
     };
     generatePlan(inputs);
   });
@@ -401,6 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
         goal: btn.dataset.goal,
         timeline: btn.dataset.timeline,
         priority: btn.dataset.priority,
+        mission: (form.mission.value || '').trim(),
+        stage: form.stage.value,
       };
       generatePlan(inputs);
     });
