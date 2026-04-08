@@ -161,6 +161,16 @@ function renderPlan(plan) {
 async function savePlan(plan, btnId) {
   const btn = document.getElementById(btnId);
   const statusEl = document.getElementById('save-status');
+
+  // If guest, prompt to log in
+  const isLoggedIn = document.getElementById('output').dataset.loggedIn === 'true';
+  if (!isLoggedIn) {
+    statusEl.className = 'save-status';
+    statusEl.innerHTML = '🔐 <a href="/login" style="color:inherit;font-weight:700;">Sign in or create a free account</a> to save your plan.';
+    statusEl.classList.remove('hidden');
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
