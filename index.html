@@ -106,6 +106,25 @@
           </div>
         </div>
 
+        <div class="optional-fields">
+          <p class="optional-label">Optional — helps personalize your plan</p>
+          <div class="form-grid">
+            <div class="field field-wide">
+              <label for="mission">What are you fundraising for?</label>
+              <input type="text" id="mission" name="mission" placeholder="e.g. funding clean water access, STEM workshops, community food access" maxlength="120" />
+            </div>
+            <div class="field">
+              <label for="stage">Current stage</label>
+              <select id="stage" name="stage">
+                <option value="">Select one… (optional)</option>
+                <option value="starting">Just starting</option>
+                <option value="somedonors">Have some donors already</option>
+                <option value="done1">Have done one campaign before</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <button type="submit" class="btn-primary btn-generate">Generate My Plan →</button>
       </form>
     </div>
