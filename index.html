@@ -140,11 +140,30 @@
         <p>Your custom fundraising plan will appear here.</p>
       </div>
 
+      <!-- Loading state -->
+      <div class="loading-state hidden" id="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Building your plan…</p>
+      </div>
+
       <!-- Generated output (hidden until form submitted) -->
       <div class="output hidden" id="output">
 
+        <!-- Playbook header -->
+        <div class="playbook-header">
+          <h2 class="playbook-title">Your RaiseKit Playbook</h2>
+          <p class="playbook-subtitle" id="playbook-subtitle"></p>
+        </div>
+
         <!-- Fit badge -->
         <div class="fit-badge" id="fit-badge"></div>
+
+        <!-- Top action row -->
+        <div class="action-row action-row-top">
+          <button class="btn-primary" id="copy-all-btn-top">📋 Copy Full Plan</button>
+          <button class="btn-secondary" id="download-btn-top">⬇ Download as .txt</button>
+          <button class="btn-outline" id="regenerate-btn">↺ Regenerate</button>
+        </div>
 
         <!-- What to do today -->
         <div class="card today-card">
