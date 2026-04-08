@@ -1,0 +1,209 @@
+<% const pageTitle = 'Generator' %>
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<!-- ───── GENERATOR ───── -->
+<section class="generator" id="generator">
+  <div class="generator-inner">
+    <h2>Generate your fundraising playbook</h2>
+
+    <% if (errors.length > 0) { %>
+      <div class="alert alert-error" style="margin-bottom:24px;">
+        <% errors.forEach(function(err) { %><p><%= err %></p><% }) %>
+      </div>
+    <% } %>
+
+    <!-- Preset Examples -->
+    <div class="presets">
+      <span class="presets-label">Try an example:</span>
+      <button class="preset-btn" data-org="student" data-goal="5000" data-timeline="1month" data-priority="mixed">
+        🎓 Campus club · $5,000 · 1 month
+      </button>
+      <button class="preset-btn" data-org="nonprofit" data-goal="10000" data-timeline="3months" data-priority="grants">
+        🌱 Small nonprofit · $10,000 · 3 months
+      </button>
+      <button class="preset-btn" data-org="community" data-goal="1000" data-timeline="2weeks" data-priority="smalldonors">
+        🏘 Community project · $1,000 · 2 weeks
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form id="playbook-form">
+      <div class="form-grid">
+        <div class="field">
+          <label for="org-type">Organization type</label>
+          <select id="org-type" name="orgType" required>
+            <option value="">Select one…</option>
+            <option value="student" <%= (inputs.orgType === 'student') ? 'selected' : '' %>>Student organization</option>
+            <option value="nonprofit" <%= (inputs.orgType === 'nonprofit') ? 'selected' : '' %>>Small nonprofit</option>
+            <option value="community" <%= (inputs.orgType === 'community') ? 'selected' : '' %>>Community project</option>
+            <option value="campus" <%= (inputs.orgType === 'campus') ? 'selected' : '' %>>Campus initiative</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="goal">Funding goal</label>
+          <select id="goal" name="fundingGoal" required>
+            <option value="">Select one…</option>
+            <option value="1000" <%= (inputs.fundingGoal === '1000') ? 'selected' : '' %>>$1,000</option>
+            <option value="5000" <%= (inputs.fundingGoal === '5000') ? 'selected' : '' %>>$5,000</option>
+            <option value="10000" <%= (inputs.fundingGoal === '10000') ? 'selected' : '' %>>$10,000</option>
+            <option value="25000" <%= (inputs.fundingGoal === '25000') ? 'selected' : '' %>>$25,000+</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="timeline">Time horizon</label>
+          <select id="timeline" name="timeHorizon" required>
+            <option value="">Select one…</option>
+            <option value="2weeks" <%= (inputs.timeHorizon === '2weeks') ? 'selected' : '' %>>2 weeks</option>
+            <option value="1month" <%= (inputs.timeHorizon === '1month') ? 'selected' : '' %>>1 month</option>
+            <option value="3months" <%= (inputs.timeHorizon === '3months') ? 'selected' : '' %>>3 months</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="priority">Funding priority</label>
+          <select id="priority" name="fundingPriority" required>
+            <option value="">Select one…</option>
+            <option value="grants" <%= (inputs.fundingPriority === 'grants') ? 'selected' : '' %>>Grants</option>
+            <option value="smalldonors" <%= (inputs.fundingPriority === 'smalldonors') ? 'selected' : '' %>>Small donors</option>
+            <option value="corporate" <%= (inputs.fundingPriority === 'corporate') ? 'selected' : '' %>>Corporate sponsors</option>
+            <option value="mixed" <%= (inputs.fundingPriority === 'mixed') ? 'selected' : '' %>>Mixed strategy</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="optional-fields">
+        <p class="optional-label">Optional — helps personalize your plan</p>
+        <div class="form-grid">
+          <div class="field field-wide">
+            <label for="mission">What are you fundraising for?</label>
+            <input type="text" id="mission" name="mission"
+              value="<%= inputs.mission || '' %>"
+              placeholder="e.g. funding clean water access, STEM workshops, community food access"
+              maxlength="120" />
+          </div>
+          <div class="field">
+            <label for="stage">Current stage</label>
+            <select id="stage" name="currentStage">
+              <option value="">Select one… (optional)</option>
+              <option value="starting" <%= (inputs.currentStage === 'starting') ? 'selected' : '' %>>Just starting</option>
+              <option value="somedonors" <%= (inputs.currentStage === 'somedonors') ? 'selected' : '' %>>Have some donors already</option>
+              <option value="done1" <%= (inputs.currentStage === 'done1') ? 'selected' : '' %>>Have done one campaign before</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary btn-generate">Generate My Plan →</button>
+    </form>
+  </div>
+</section>
+
+<!-- ───── RESULTS ───── -->
+<section class="results" id="results">
+  <div class="results-inner">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>Your custom fundraising plan will appear here.</p>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-state hidden" id="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Building your plan…</p>
+    </div>
+
+    <!-- Generated output -->
+    <div class="output hidden" id="output">
+
+      <!-- Playbook header -->
+      <div class="playbook-header">
+        <h2 class="playbook-title">Your RaiseKit Playbook</h2>
+        <p class="playbook-subtitle" id="playbook-subtitle"></p>
+      </div>
+
+      <!-- Fit badge -->
+      <div class="fit-badge" id="fit-badge"></div>
+
+      <!-- Top action row -->
+      <div class="action-row action-row-top">
+        <button class="btn-primary" id="save-plan-btn">💾 Save to Dashboard</button>
+        <button class="btn-secondary" id="download-btn-top">⬇ Download as .txt</button>
+        <button class="btn-outline" id="regenerate-btn">↺ Regenerate</button>
+      </div>
+
+      <!-- Save status message -->
+      <div id="save-status" class="save-status hidden"></div>
+
+      <!-- What to do today -->
+      <div class="card today-card">
+        <div class="card-header">
+          <h3>⚡ What to do today</h3>
+          <button class="copy-btn" data-target="today-content">Copy</button>
+        </div>
+        <ul id="today-content"></ul>
+      </div>
+
+      <!-- Strategy -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📌 Recommended strategy</h3>
+          <button class="copy-btn" data-target="strategy-content">Copy</button>
+        </div>
+        <p id="strategy-content"></p>
+      </div>
+
+      <!-- 4-week plan -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📅 Your action timeline</h3>
+          <button class="copy-btn" data-target="timeline-content">Copy</button>
+        </div>
+        <div id="timeline-content"></div>
+      </div>
+
+      <!-- Donor email -->
+      <div class="card">
+        <div class="card-header">
+          <h3>✉️ Donor outreach template</h3>
+          <button class="copy-btn" data-target="email-content">Copy</button>
+        </div>
+        <pre id="email-content"></pre>
+      </div>
+
+      <!-- Grant ideas -->
+      <div class="card">
+        <div class="card-header">
+          <h3>🏆 Grant starter list</h3>
+          <button class="copy-btn" data-target="grants-content">Copy</button>
+        </div>
+        <ul id="grants-content"></ul>
+      </div>
+
+      <!-- Checklist -->
+      <div class="card">
+        <div class="card-header">
+          <h3>✅ Copyable checklist</h3>
+          <button class="copy-btn" data-target="checklist-content">Copy</button>
+        </div>
+        <ul id="checklist-content"></ul>
+      </div>
+
+      <!-- Bottom action row -->
+      <div class="action-row">
+        <button class="btn-primary" id="save-plan-btn-bottom">💾 Save to Dashboard</button>
+        <button class="btn-secondary" id="download-btn">⬇ Download as .txt</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script src="/generator.js"></script>
+<%- include('partials/footer') %>
+</body>
+</html>

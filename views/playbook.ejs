@@ -1,0 +1,196 @@
+<% const pageTitle = 'Playbook' %>
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<section class="results" style="padding-top:48px;">
+  <div class="results-inner">
+
+    <div style="margin-bottom:24px;">
+      <a href="/dashboard" class="nav-back">← Back to Dashboard</a>
+    </div>
+
+    <div class="playbook-header">
+      <h2 class="playbook-title">Your RaiseKit Playbook</h2>
+      <p class="playbook-subtitle">
+        For <%= playbook.org_type %> raising $<%= parseInt(playbook.funding_goal, 10).toLocaleString() %> over <%= playbook.time_horizon %>
+      </p>
+    </div>
+
+    <div class="meta-row">
+      <span class="pb-badge"><%= playbook.org_type %></span>
+      <span class="pb-badge pb-badge-secondary"><%= playbook.funding_priority %></span>
+      <span class="pb-date">Saved <%= new Date(playbook.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
+    </div>
+
+    <% if (playbook.mission) { %>
+      <div class="fit-badge" style="margin-top:12px;">"<%= playbook.mission %>"</div>
+    <% } %>
+
+    <!-- Top action row -->
+    <div class="action-row action-row-top" style="margin-top:24px;">
+      <button class="btn-primary" id="copy-all-btn-top">📋 Copy Full Plan</button>
+      <form action="/playbooks/<%= playbook.id %>/delete" method="POST" onsubmit="return confirm('Delete this playbook?');" style="flex:1;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn-secondary" style="width:100%;">🗑 Delete Playbook</button>
+      </form>
+    </div>
+
+    <!-- What to do today -->
+    <div class="card today-card">
+      <div class="card-header">
+        <h3>⚡ What to do today</h3>
+        <button class="copy-btn" data-target="today-content">Copy</button>
+      </div>
+      <ul id="today-content">
+        <% todayActions.forEach(function(item) { %>
+          <li><%= item %></li>
+        <% }) %>
+      </ul>
+    </div>
+
+    <!-- Strategy -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📌 Recommended strategy</h3>
+        <button class="copy-btn" data-target="strategy-content">Copy</button>
+      </div>
+      <p id="strategy-content"><%= playbook.strategy_summary %></p>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📅 Your action timeline</h3>
+        <button class="copy-btn" data-target="timeline-content">Copy</button>
+      </div>
+      <div id="timeline-content">
+        <% timeline.forEach(function(w) { %>
+          <div class="timeline-week">
+            <div class="week-label"><%= w.label %></div>
+            <div class="week-tasks"><%= w.tasks %></div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Donor email -->
+    <div class="card">
+      <div class="card-header">
+        <h3>✉️ Donor outreach template</h3>
+        <button class="copy-btn" data-target="email-content">Copy</button>
+      </div>
+      <pre id="email-content"><%= playbook.donor_outreach %></pre>
+    </div>
+
+    <!-- Grant ideas -->
+    <div class="card">
+      <div class="card-header">
+        <h3>🏆 Grant starter list</h3>
+        <button class="copy-btn" data-target="grants-content">Copy</button>
+      </div>
+      <ul id="grants-content">
+        <% grantIdeas.forEach(function(item) { %>
+          <li><%= item %></li>
+        <% }) %>
+      </ul>
+    </div>
+
+    <!-- Checklist -->
+    <div class="card">
+      <div class="card-header">
+        <h3>✅ Copyable checklist</h3>
+        <button class="copy-btn" data-target="checklist-content">Copy</button>
+      </div>
+      <ul id="checklist-content">
+        <% checklist.forEach(function(item) { %>
+          <li><%= item %></li>
+        <% }) %>
+      </ul>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="action-row">
+      <button class="btn-primary" id="copy-all-btn">📋 Copy Full Plan</button>
+      <a href="/dashboard" class="btn-secondary" style="text-align:center;">← Back to Dashboard</a>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var targetId = btn.dataset.target;
+      var target = document.getElementById(targetId);
+      var text = '';
+      if (target.tagName === 'UL') {
+        text = Array.from(target.querySelectorAll('li')).map(function(li) { return li.textContent; }).join('\n');
+      } else if (targetId === 'timeline-content') {
+        text = Array.from(target.querySelectorAll('.timeline-week'))
+          .map(function(w) { return w.querySelector('.week-label').textContent + ': ' + w.querySelector('.week-tasks').textContent; })
+          .join('\n');
+      } else {
+        text = target.textContent || target.innerText;
+      }
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+      });
+    });
+  });
+
+  // Copy full plan
+  function copyAll(btnId) {
+    var sections = [];
+    sections.push('══════════════════════════════════════');
+    sections.push('         RAISEKIT — YOUR FUNDRAISING PLAN');
+    sections.push('══════════════════════════════════════\n');
+
+    var today = document.getElementById('today-content');
+    sections.push('── WHAT TO DO TODAY ──');
+    Array.from(today.querySelectorAll('li')).forEach(function(li) { sections.push('• ' + li.textContent); });
+    sections.push('');
+
+    sections.push('── RECOMMENDED STRATEGY ──');
+    sections.push(document.getElementById('strategy-content').textContent);
+    sections.push('');
+
+    sections.push('── ACTION TIMELINE ──');
+    Array.from(document.querySelectorAll('.timeline-week')).forEach(function(w) {
+      sections.push(w.querySelector('.week-label').textContent + ': ' + w.querySelector('.week-tasks').textContent);
+    });
+    sections.push('');
+
+    sections.push('── DONOR OUTREACH TEMPLATE ──');
+    sections.push(document.getElementById('email-content').textContent);
+    sections.push('');
+
+    sections.push('── GRANT STARTER LIST ──');
+    Array.from(document.getElementById('grants-content').querySelectorAll('li')).forEach(function(li) { sections.push(li.textContent); });
+    sections.push('');
+
+    sections.push('── CHECKLIST ──');
+    Array.from(document.getElementById('checklist-content').querySelectorAll('li')).forEach(function(li) { sections.push(li.textContent); });
+    sections.push('');
+
+    sections.push('══════════════════════════════════════');
+    sections.push('Generated by RaiseKit · github.com/Giancarla-Burgos/test-fundraising');
+    sections.push('══════════════════════════════════════');
+
+    navigator.clipboard.writeText(sections.join('\n')).then(function() {
+      var btn = document.getElementById(btnId);
+      var orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(function() { btn.textContent = orig; }, 2000);
+    });
+  }
+
+  document.getElementById('copy-all-btn-top').addEventListener('click', function() { copyAll('copy-all-btn-top'); });
+  document.getElementById('copy-all-btn').addEventListener('click', function() { copyAll('copy-all-btn'); });
+</script>
+
+<%- include('partials/footer') %>
+</body>
+</html>

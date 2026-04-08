@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' — RaiseKit' : 'RaiseKit — Fundraising Copilot for Student Orgs & Nonprofits' %></title>
+  <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+  <link rel="stylesheet" href="/style.css" />
+  <%- typeof extraStyles !== 'undefined' ? extraStyles : '' %>
+</head>
+<body>

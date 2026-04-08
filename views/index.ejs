@@ -1,0 +1,72 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<!-- ───── HERO ───── -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="logo">🚀 RaiseKit</div>
+    <h1>Build your fundraising plan in 30 seconds.</h1>
+    <p class="tagline">A fundraising copilot for student organizations and small nonprofits.<br>Generate a practical strategy, outreach templates, and an action plan — instantly.</p>
+    <div class="hero-cta-group">
+      <% if (currentUser) { %>
+        <a href="/generator" class="btn-primary">Generate My Plan →</a>
+        <a href="/dashboard" class="btn-secondary-light">Go to Dashboard</a>
+      <% } else { %>
+        <a href="/signup" class="btn-primary">Get started free →</a>
+        <a href="/login" class="btn-secondary-light">Log in</a>
+      <% } %>
+    </div>
+  </div>
+</header>
+
+<!-- ───── HOW IT WORKS ───── -->
+<section class="how-it-works">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Enter your details</h3>
+      <p>Tell us your org type, funding goal, timeline, and priorities.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Get your playbook</h3>
+      <p>Receive a tailored strategy, timeline, outreach copy, and grant ideas.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Save &amp; execute</h3>
+      <p>Save your plan to your dashboard and come back to it anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───── ABOUT ───── -->
+<section class="about">
+  <div class="about-inner">
+    <h2>About RaiseKit</h2>
+    <p>RaiseKit helps student organizations and small nonprofits build practical fundraising plans fast. Instead of starting from scratch, users enter their org type, funding goal, and timeline to get a suggested strategy, outreach messaging, and a step-by-step execution plan.</p>
+    <p>The long-term vision is to expand into grant matching, donor segmentation, and fundraising workflow automation — giving mission-driven teams the infrastructure that larger organizations already have.</p>
+    <p class="built-by">Built by <strong><a href="https://github.com/Giancarla-Burgos" target="_blank" rel="noopener">Giancarla Burgos</a></strong> · Inspired by real experience in fundraising strategy, grant research, and donor communications.</p>
+  </div>
+</section>
+
+<!-- ───── ROADMAP ───── -->
+<section class="roadmap">
+  <div class="roadmap-inner">
+    <h2>Roadmap</h2>
+    <p class="roadmap-sub">What RaiseKit becomes next.</p>
+    <ul class="roadmap-list">
+      <li><span class="roadmap-icon">🔍</span> Grant matching based on mission and eligibility</li>
+      <li><span class="roadmap-icon">📊</span> Donor segmentation from uploaded contact lists</li>
+      <li><span class="roadmap-icon">✍️</span> Personalized outreach generation per donor segment</li>
+      <li><span class="roadmap-icon">👥</span> Team collaboration dashboard for shared campaigns</li>
+      <li><span class="roadmap-icon">📆</span> Application and deadline tracker with reminders</li>
+      <li><span class="roadmap-icon">🔗</span> CRM integrations (Airtable, Google Sheets)</li>
+    </ul>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
+</body>
+</html>
