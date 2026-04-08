@@ -53,7 +53,7 @@
               </div>
               <h3 class="pb-card-title">
                 <%= pb.org_type.charAt(0).toUpperCase() + pb.org_type.slice(1) %> ·
-                $<%= parseInt(pb.funding_goal).toLocaleString() %> ·
+                $<%= parseInt(pb.funding_goal, 10).toLocaleString() %> ·
                 <%= pb.time_horizon %>
               </h3>
               <% if (pb.mission) { %>

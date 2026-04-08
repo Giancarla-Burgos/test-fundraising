@@ -48,27 +48,32 @@ router.post(
 
     const { name, email, password } = req.body;
 
-    // Check for existing email
-    if (users.findByEmail(email)) {
-      return res.render('signup', {
-        errors: ['An account with that email already exists.'],
-        old,
-      });
-    }
-
-    // Hash password and create user
-    const passwordHash = await bcrypt.hash(password, 12);
-    const userId = users.create({ name, email, password: passwordHash });
-
-    // Log user in immediately; save session before redirecting
-    req.session.userId = userId;
-    req.session.userName = name;
-    req.session.save((err) => {
-      if (err) {
-        return res.render('signup', { errors: ['Sign up failed. Please try again.'], old });
+    try {
+      // Check for existing email
+      if (await users.findByEmail(email)) {
+        return res.render('signup', {
+          errors: ['An account with that email already exists.'],
+          old,
+        });
       }
-      res.redirect('/dashboard');
-    });
+
+      // Hash password and create user
+      const passwordHash = await bcrypt.hash(password, 12);
+      const userId = await users.create({ name, email, password: passwordHash });
+
+      // Log user in immediately; save session before redirecting
+      req.session.userId = userId;
+      req.session.userName = name;
+      req.session.save((err) => {
+        if (err) {
+          return res.render('signup', { errors: ['Sign up failed. Please try again.'], old });
+        }
+        res.redirect('/dashboard');
+      });
+    } catch (err) {
+      console.error('Signup error:', err);
+      res.render('signup', { errors: ['Sign up failed. Please try again.'], old });
+    }
   }
 );
 
@@ -97,12 +102,20 @@ router.post(
     }
 
     const { email, password } = req.body;
-    const user = users.findByEmail(email);
 
-    // Deliberate constant-time comparison even on missing user
+    let user;
+    try {
+      user = await users.findByEmail(email);
+    } catch (err) {
+      console.error('Login DB error:', err);
+      return res.render('login', { errors: ['Login failed. Please try again.'], old });
+    }
+
+    // Deliberate constant-time comparison even on missing user (prevents timing attacks)
+    const DUMMY_HASH = '$2a$12$KIXBp/yCnVqFBGjnFBjjOuTFqYXoGIOG8wExi8VpJb7vLf7VSmMUC';
     const passwordMatch = user
       ? await bcrypt.compare(password, user.password)
-      : await bcrypt.compare(password, '$2a$12$invalidhashplaceholderXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+      : await bcrypt.compare(password, DUMMY_HASH);
 
     if (!user || !passwordMatch) {
       return res.render('login', {

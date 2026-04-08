@@ -91,7 +91,7 @@ router.post(
     body('grantIdeas').trim().notEmpty(),
     body('checklist').trim().notEmpty(),
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: 'Invalid playbook data.' });
@@ -102,63 +102,68 @@ router.post(
       strategySummary, todayActions, timeline, donorOutreach, grantIdeas, checklist,
     } = req.body;
 
-    const id = playbooks.create({
-      userId: req.session.userId,
-      orgType,
-      fundingGoal,
-      timeHorizon,
-      fundingPriority,
-      mission: mission || '',
-      currentStage: currentStage || '',
-      strategySummary,
-      todayActions,
-      timeline,
-      donorOutreach,
-      grantIdeas,
-      checklist,
-    });
-
-    res.json({ success: true, id });
+    try {
+      const id = await playbooks.create({
+        userId: req.session.userId,
+        orgType,
+        fundingGoal,
+        timeHorizon,
+        fundingPriority,
+        mission: mission || '',
+        currentStage: currentStage || '',
+        strategySummary,
+        todayActions,
+        timeline,
+        donorOutreach,
+        grantIdeas,
+        checklist,
+      });
+      res.json({ success: true, id });
+    } catch (err) {
+      console.error('Save playbook error:', err);
+      res.status(500).json({ error: 'Could not save playbook. Please try again.' });
+    }
   }
 );
 
 // ── View saved playbook ────────────────────────────────────────────────────
 
-router.get('/playbooks/:id', requireAuth, (req, res) => {
+router.get('/playbooks/:id', requireAuth, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.redirect('/dashboard');
 
-  const playbook = playbooks.findByIdAndUser(id, req.session.userId);
-  if (!playbook) {
-    return res.redirect('/dashboard');
+  try {
+    const playbook = await playbooks.findByIdAndUser(id, req.session.userId);
+    if (!playbook) return res.redirect('/dashboard');
+
+    // Parse JSON-stored arrays back to objects
+    let todayActions = [];
+    let timeline = [];
+    let grantIdeas = [];
+    let checklist = [];
+    try { todayActions = JSON.parse(playbook.today_actions); } catch (_) {}
+    try { timeline = JSON.parse(playbook.timeline); } catch (_) {}
+    try { grantIdeas = JSON.parse(playbook.grant_ideas); } catch (_) {}
+    try { checklist = JSON.parse(playbook.checklist); } catch (_) {}
+
+    res.render('playbook', { playbook, todayActions, timeline, grantIdeas, checklist });
+  } catch (err) {
+    console.error('View playbook error:', err);
+    res.status(500).render('error', { message: 'Could not load playbook. Please try again.' });
   }
-
-  // Parse JSON-stored arrays back to objects
-  let todayActions = [];
-  let timeline = [];
-  let grantIdeas = [];
-  let checklist = [];
-  try { todayActions = JSON.parse(playbook.today_actions); } catch (_) {}
-  try { timeline = JSON.parse(playbook.timeline); } catch (_) {}
-  try { grantIdeas = JSON.parse(playbook.grant_ideas); } catch (_) {}
-  try { checklist = JSON.parse(playbook.checklist); } catch (_) {}
-
-  res.render('playbook', {
-    playbook,
-    todayActions,
-    timeline,
-    grantIdeas,
-    checklist,
-  });
 });
 
 // ── Delete playbook ────────────────────────────────────────────────────────
 
-router.post('/playbooks/:id/delete', requireAuth, (req, res) => {
+router.post('/playbooks/:id/delete', requireAuth, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.redirect('/dashboard');
 
-  playbooks.deleteByIdAndUser(id, req.session.userId);
+  try {
+    await playbooks.deleteByIdAndUser(id, req.session.userId);
+  } catch (err) {
+    console.error('Delete playbook error:', err);
+  }
   res.redirect('/dashboard');
 });
 

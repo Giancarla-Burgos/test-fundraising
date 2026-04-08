@@ -13,12 +13,16 @@
 
 require('dotenv').config();
 
+// Refuse to start in production without a real session secret
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET environment variable is required in production.');
+}
+
 const crypto = require('crypto');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-const BetterSqlite3Store = require('better-sqlite3-session-store')(session);
-const { db } = require('./models/db');
+const FileStore = require('session-file-store')(session);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,9 +39,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // ── Sessions ──────────────────────────────────────────────────────────────
+// Sessions are stored as JSON files in ./sessions/ (local to the server).
+// For production deployments, swap FileStore for a Redis or Postgres-backed
+// store so sessions survive server restarts and work across multiple instances.
 app.use(
   session({
-    store: new BetterSqlite3Store({ client: db }),
+    store: new FileStore({ path: './sessions', ttl: 7 * 24 * 3600, retries: 1 }),
     secret: process.env.SESSION_SECRET || 'change-this-secret-in-production',
     resave: false,
     saveUninitialized: false,

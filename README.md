@@ -6,16 +6,18 @@
 
 ---
 
-## What's new in this version
+## What's in this version
 
-RaiseKit has evolved from a static GitHub Pages site into a **full-stack web application** with:
+RaiseKit is a full-stack web application with:
 
 - ✅ User accounts (sign up, log in, log out)
 - ✅ Session-based authentication with bcrypt password hashing
-- ✅ A personal dashboard to manage your saved playbooks
+- ✅ CSRF protection on every state-changing route
+- ✅ A personal dashboard to manage saved playbooks
 - ✅ Save, view, and delete fundraising playbooks
+- ✅ **Supabase (PostgreSQL)** as the database backend
 - ✅ All the original generator features, now backed by a real database
-- ✅ Clean, polished UI consistent with the original branding
+- ✅ Clean, polished UI consistent with the original RaiseKit branding
 
 ---
 
@@ -26,7 +28,9 @@ RaiseKit has evolved from a static GitHub Pages site into a **full-stack web app
 | Runtime | Node.js |
 | Framework | Express |
 | Templates | EJS |
-| Database | SQLite (via better-sqlite3) |
+| Database | Supabase (PostgreSQL) |
+| ORM/Client | @supabase/supabase-js |
+| Session store | session-file-store (local files) |
 | Auth | express-session + bcryptjs |
 | Validation | express-validator |
 | Env vars | dotenv |
@@ -40,12 +44,14 @@ RaiseKit has evolved from a static GitHub Pages site into a **full-stack web app
 ├── server.js               ← Express entry point
 ├── package.json
 ├── .env.example            ← Copy to .env and fill in values
+├── supabase/
+│   └── schema.sql          ← Run this once in Supabase SQL Editor
 ├── routes/
 │   ├── auth.js             ← /signup, /login, /logout
 │   ├── dashboard.js        ← /dashboard
 │   └── playbooks.js        ← /generator, /generate, /playbooks
 ├── models/
-│   └── db.js               ← SQLite connection + schema + query helpers
+│   └── db.js               ← Supabase client + async query helpers
 ├── views/
 │   ├── partials/
 │   │   ├── head.ejs
@@ -74,7 +80,8 @@ RaiseKit has evolved from a static GitHub Pages site into a **full-stack web app
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+
+- A free [Supabase](https://supabase.com) account and project
 
 ### 1. Clone the repository
 
@@ -89,32 +96,41 @@ cd test-fundraising
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Create your Supabase tables
+
+1. Go to your Supabase project → **SQL Editor** → **New query**
+2. Paste the contents of `supabase/schema.sql`
+3. Click **Run**
+
+This creates the `users` and `playbooks` tables.
+
+### 4. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and set a strong `SESSION_SECRET`:
+Open `.env` and fill in:
 
-```bash
-# Generate a secure secret:
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```env
+SESSION_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ```
 
-Paste the output as your `SESSION_SECRET` in `.env`.
+Find your Supabase credentials at: **Project Settings → API**
+- **URL** — the Project URL
+- **service_role** key — under "Project API keys" (keep this private!)
 
-### 4. Start the server
+### 5. Start the server
 
 ```bash
 npm start
 ```
 
-The server will start at **http://localhost:3000**.
+App runs at **http://localhost:3000**.
 
-The SQLite database is created automatically at `./data/raisekit.db` on first run — no migration step needed.
-
-### Development mode (auto-restart on file changes)
+### Development mode (auto-restart)
 
 ```bash
 npm run dev
@@ -141,38 +157,39 @@ npm run dev
 
 ---
 
-## Security notes
+## Security
 
-- Passwords are hashed with **bcrypt** (12 rounds) — plaintext passwords are never stored.
-- Sessions use `httpOnly`, `SameSite=Lax` cookies. Set `NODE_ENV=production` to enable `secure` (HTTPS-only) cookies.
-- Input is validated and sanitized on both client and server via **express-validator**.
-- Session secrets are read from environment variables — never hardcoded.
-- **CSRF protection**: Currently using `SameSite=Lax` as a baseline. For production, add a dedicated CSRF token middleware (e.g., [`csrf-csrf`](https://www.npmjs.com/package/csrf-csrf)) before state-changing POST routes.
+- **Passwords** — hashed with bcrypt (12 rounds); never stored in plaintext
+- **Sessions** — `httpOnly`, `SameSite=Lax` cookies; `Secure` flag enabled in production
+- **CSRF** — synchronizer token pattern: a random token is generated per session, embedded in all forms, and validated on every `POST`/`PUT`/`DELETE` request
+- **Session fixation** — session is regenerated after login
+- **Timing attacks** — login always runs `bcrypt.compare()` even when the user doesn't exist
+- **Input validation** — all form fields validated and sanitized with express-validator
+- **Supabase key** — the `service_role` key is server-only and never exposed to the browser
 
 ---
 
 ## Deployment
 
-> ⚠️ **GitHub Pages cannot host this app.** GitHub Pages only serves static files and has no server-side runtime. RaiseKit now requires a real backend host.
+> ⚠️ **GitHub Pages cannot host this app.** GitHub Pages only serves static files and has no Node.js runtime. RaiseKit requires a real backend host.
 
 ### Recommended deployment options
 
 | Platform | Notes |
 |----------|-------|
-| **Railway** | Simple git-push deploys, free tier available, SQLite works fine |
-| **Render** | Easy Node.js hosting, persistent disk for SQLite |
-| **Fly.io** | More control, supports persistent volumes for SQLite |
-| **Heroku** | Classic PaaS, note that ephemeral filesystem needs a swap to PostgreSQL for production persistence |
-| **VPS (DigitalOcean, Linode, etc.)** | Full control, run with `pm2` for process management |
+| **Railway** | Simple git-push deploys, free tier, connects easily to Supabase |
+| **Render** | Easy Node.js hosting, add env vars in dashboard |
+| **Fly.io** | More control, works great with external Postgres/Supabase |
+| **Heroku** | Classic PaaS, set env vars with `heroku config:set` |
+| **VPS (DigitalOcean, Linode)** | Full control, run with `pm2` |
 
 ### Production checklist
 
-- [ ] Set `NODE_ENV=production` in your host's environment variables
+- [ ] Set `NODE_ENV=production` in your host's env vars
 - [ ] Set a strong, unique `SESSION_SECRET`
+- [ ] Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] Use HTTPS (most platforms handle this automatically)
-- [ ] Consider swapping SQLite for PostgreSQL if you expect high concurrent writes
-- [ ] Add CSRF protection middleware (`csrf-csrf`)
-- [ ] Set up regular database backups
+- [ ] For multi-instance deployments, swap `session-file-store` for a Redis or PostgreSQL-backed session store
 
 ---
 

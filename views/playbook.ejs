@@ -12,7 +12,7 @@
     <div class="playbook-header">
       <h2 class="playbook-title">Your RaiseKit Playbook</h2>
       <p class="playbook-subtitle">
-        For <%= playbook.org_type %> raising $<%= parseInt(playbook.funding_goal).toLocaleString() %> over <%= playbook.time_horizon %>
+        For <%= playbook.org_type %> raising $<%= parseInt(playbook.funding_goal, 10).toLocaleString() %> over <%= playbook.time_horizon %>
       </p>
     </div>
 

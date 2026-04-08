@@ -1,115 +1,130 @@
 /**
  * models/db.js
- * SQLite database connection and schema initialization.
- * Uses better-sqlite3 for a simple synchronous API.
+ * Supabase client and async query helpers for users and playbooks.
+ *
+ * Setup: create the tables in Supabase using schema.sql, then set
+ * SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file.
+ *
+ * The service role key bypasses Row Level Security so all server-side
+ * operations work without extra RLS policies during development.
+ * For production, consider adding RLS policies and using the anon key
+ * with proper policies, or keep the service role key server-side only.
  */
 
-const Database = require('better-sqlite3');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'data', 'raisekit.db');
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Ensure the data directory exists
-const fs = require('fs');
-const dataDir = path.dirname(DB_PATH);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    'Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables. ' +
+    'Copy .env.example to .env and fill in your Supabase project credentials.'
+  );
 }
 
-const db = new Database(DB_PATH);
-
-// Enable WAL mode for better concurrent read performance
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-
-// ── Schema ─────────────────────────────────────────────────────────────────
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT    NOT NULL,
-    email       TEXT    NOT NULL UNIQUE,
-    password    TEXT    NOT NULL,
-    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS playbooks (
-    id               INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id          INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    org_type         TEXT    NOT NULL,
-    funding_goal     TEXT    NOT NULL,
-    time_horizon     TEXT    NOT NULL,
-    funding_priority TEXT    NOT NULL,
-    mission          TEXT,
-    current_stage    TEXT,
-    strategy_summary TEXT    NOT NULL,
-    today_actions    TEXT    NOT NULL,
-    timeline         TEXT    NOT NULL,
-    donor_outreach   TEXT    NOT NULL,
-    grant_ideas      TEXT    NOT NULL,
-    checklist        TEXT    NOT NULL,
-    created_at       TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-`);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false }, // Server-side: never persist the Supabase auth session
+});
 
 // ── User helpers ───────────────────────────────────────────────────────────
 
 const users = {
-  findByEmail(email) {
-    return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  /** Returns the user row with the given email, or null if not found. */
+  async findByEmail(email) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
   },
-  findById(id) {
-    return db.prepare('SELECT id, name, email, created_at FROM users WHERE id = ?').get(id);
+
+  /** Returns a user row (without password) for the given id, or null. */
+  async findById(id) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, created_at')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
   },
-  create({ name, email, password }) {
-    const stmt = db.prepare(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)'
-    );
-    const result = stmt.run(name, email, password);
-    return result.lastInsertRowid;
+
+  /** Inserts a new user and returns the new user's id. */
+  async create({ name, email, password }) {
+    const { data, error } = await supabase
+      .from('users')
+      .insert({ name, email, password })
+      .select('id')
+      .single();
+    if (error) throw error;
+    return data.id;
   },
 };
 
 // ── Playbook helpers ────────────────────────────────────────────────────────
 
 const playbooks = {
-  findAllByUser(userId) {
-    return db
-      .prepare(
-        `SELECT id, org_type, funding_goal, time_horizon, funding_priority,
-                mission, current_stage, created_at
-         FROM playbooks WHERE user_id = ? ORDER BY created_at DESC`
-      )
-      .all(userId);
+  /** Returns summary rows for all playbooks owned by userId, newest first. */
+  async findAllByUser(userId) {
+    const { data, error } = await supabase
+      .from('playbooks')
+      .select('id, org_type, funding_goal, time_horizon, funding_priority, mission, current_stage, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
   },
-  findById(id) {
-    return db.prepare('SELECT * FROM playbooks WHERE id = ?').get(id);
+
+  /** Returns the full playbook row only if it belongs to the given userId. */
+  async findByIdAndUser(id, userId) {
+    const { data, error } = await supabase
+      .from('playbooks')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
   },
-  findByIdAndUser(id, userId) {
-    return db
-      .prepare('SELECT * FROM playbooks WHERE id = ? AND user_id = ?')
-      .get(id, userId);
+
+  /** Inserts a new playbook row and returns the new id. */
+  async create(data) {
+    const { data: row, error } = await supabase
+      .from('playbooks')
+      .insert({
+        user_id:          data.userId,
+        org_type:         data.orgType,
+        funding_goal:     data.fundingGoal,
+        time_horizon:     data.timeHorizon,
+        funding_priority: data.fundingPriority,
+        mission:          data.mission || null,
+        current_stage:    data.currentStage || null,
+        strategy_summary: data.strategySummary,
+        today_actions:    data.todayActions,
+        timeline:         data.timeline,
+        donor_outreach:   data.donorOutreach,
+        grant_ideas:      data.grantIdeas,
+        checklist:        data.checklist,
+      })
+      .select('id')
+      .single();
+    if (error) throw error;
+    return row.id;
   },
-  create(data) {
-    const stmt = db.prepare(`
-      INSERT INTO playbooks
-        (user_id, org_type, funding_goal, time_horizon, funding_priority,
-         mission, current_stage, strategy_summary, today_actions, timeline,
-         donor_outreach, grant_ideas, checklist)
-      VALUES
-        (@userId, @orgType, @fundingGoal, @timeHorizon, @fundingPriority,
-         @mission, @currentStage, @strategySummary, @todayActions, @timeline,
-         @donorOutreach, @grantIdeas, @checklist)
-    `);
-    const result = stmt.run(data);
-    return result.lastInsertRowid;
-  },
-  deleteByIdAndUser(id, userId) {
-    const result = db
-      .prepare('DELETE FROM playbooks WHERE id = ? AND user_id = ?')
-      .run(id, userId);
-    return result.changes > 0;
+
+  /** Deletes a playbook only if it belongs to the given userId. Returns true if deleted. */
+  async deleteByIdAndUser(id, userId) {
+    const { error, count } = await supabase
+      .from('playbooks')
+      .delete({ count: 'exact' })
+      .eq('id', id)
+      .eq('user_id', userId);
+    if (error) throw error;
+    return count > 0;
   },
 };
 
-module.exports = { db, users, playbooks };
+module.exports = { supabase, users, playbooks };

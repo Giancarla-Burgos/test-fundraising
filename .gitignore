@@ -4,7 +4,10 @@ node_modules/
 # Environment variables — never commit secrets
 .env
 
-# SQLite database files
+# Session files (local session store)
+sessions/
+
+# SQLite database files (no longer used — kept for safety)
 data/
 *.db
 *.db-shm
