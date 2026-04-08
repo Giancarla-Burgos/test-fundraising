@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RaiseKit — Fundraising Copilot for Student Orgs & Nonprofits</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ───── HERO ───── -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="logo">🚀 RaiseKit</div>
+      <h1>Build your fundraising plan<br>in 30 seconds.</h1>
+      <p class="tagline">A fundraising copilot for student organizations and small nonprofits.<br>Generate a practical strategy, outreach templates, and an action plan — instantly.</p>
+      <a href="#generator" class="btn-primary">Generate My Plan ↓</a>
+    </div>
+  </header>
+
+  <!-- ───── HOW IT WORKS ───── -->
+  <section class="how-it-works">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Enter your details</h3>
+        <p>Tell us your org type, funding goal, timeline, and priorities.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Get your playbook</h3>
+        <p>Receive a tailored strategy, timeline, outreach copy, and grant ideas.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Copy, share, execute</h3>
+        <p>Copy any section with one click, download your full plan, and start today.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── GENERATOR ───── -->
+  <section class="generator" id="generator">
+    <div class="generator-inner">
+      <h2>Generate your fundraising playbook</h2>
+
+      <!-- Preset Examples -->
+      <div class="presets">
+        <span class="presets-label">Try an example:</span>
+        <button class="preset-btn" data-org="student" data-goal="5000" data-timeline="1month" data-priority="mixed">
+          🎓 Campus club · $5,000 · 1 month
+        </button>
+        <button class="preset-btn" data-org="nonprofit" data-goal="10000" data-timeline="3months" data-priority="grants">
+          🌱 Small nonprofit · $10,000 · 3 months
+        </button>
+        <button class="preset-btn" data-org="community" data-goal="1000" data-timeline="2weeks" data-priority="smalldonors">
+          🏘 Community project · $1,000 · 2 weeks
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form id="playbook-form">
+        <div class="form-grid">
+          <div class="field">
+            <label for="org-type">Organization type</label>
+            <select id="org-type" name="orgType" required>
+              <option value="">Select one…</option>
+              <option value="student">Student organization</option>
+              <option value="nonprofit">Small nonprofit</option>
+              <option value="community">Community project</option>
+              <option value="campus">Campus initiative</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="goal">Funding goal</label>
+            <select id="goal" name="goal" required>
+              <option value="">Select one…</option>
+              <option value="1000">$1,000</option>
+              <option value="5000">$5,000</option>
+              <option value="10000">$10,000</option>
+              <option value="25000">$25,000+</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="timeline">Time horizon</label>
+            <select id="timeline" name="timeline" required>
+              <option value="">Select one…</option>
+              <option value="2weeks">2 weeks</option>
+              <option value="1month">1 month</option>
+              <option value="3months">3 months</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="priority">Funding priority</label>
+            <select id="priority" name="priority" required>
+              <option value="">Select one…</option>
+              <option value="grants">Grants</option>
+              <option value="smalldonors">Small donors</option>
+              <option value="corporate">Corporate sponsors</option>
+              <option value="mixed">Mixed strategy</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-generate">Generate My Plan →</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ───── RESULTS ───── -->
+  <section class="results" id="results">
+    <div class="results-inner">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>Your custom fundraising plan will appear here.</p>
+      </div>
+
+      <!-- Generated output (hidden until form submitted) -->
+      <div class="output hidden" id="output">
+
+        <!-- Fit badge -->
+        <div class="fit-badge" id="fit-badge"></div>
+
+        <!-- What to do today -->
+        <div class="card today-card">
+          <div class="card-header">
+            <h3>⚡ What to do today</h3>
+            <button class="copy-btn" data-target="today-content">Copy</button>
+          </div>
+          <ul id="today-content"></ul>
+        </div>
+
+        <!-- Strategy -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📌 Recommended strategy</h3>
+            <button class="copy-btn" data-target="strategy-content">Copy</button>
+          </div>
+          <p id="strategy-content"></p>
+        </div>
+
+        <!-- 4-week plan -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📅 Your action timeline</h3>
+            <button class="copy-btn" data-target="timeline-content">Copy</button>
+          </div>
+          <div id="timeline-content"></div>
+        </div>
+
+        <!-- Donor email -->
+        <div class="card">
+          <div class="card-header">
+            <h3>✉️ Donor outreach template</h3>
+            <button class="copy-btn" data-target="email-content">Copy</button>
+          </div>
+          <pre id="email-content"></pre>
+        </div>
+
+        <!-- Grant ideas -->
+        <div class="card">
+          <div class="card-header">
+            <h3>🏆 Grant starter list</h3>
+            <button class="copy-btn" data-target="grants-content">Copy</button>
+          </div>
+          <ul id="grants-content"></ul>
+        </div>
+
+        <!-- Checklist -->
+        <div class="card">
+          <div class="card-header">
+            <h3>✅ Copyable checklist</h3>
+            <button class="copy-btn" data-target="checklist-content">Copy</button>
+          </div>
+          <ul id="checklist-content"></ul>
+        </div>
+
+        <!-- Download + Copy All -->
+        <div class="action-row">
+          <button class="btn-primary" id="download-btn">⬇ Download plan as .txt</button>
+          <button class="btn-secondary" id="copy-all-btn">📋 Copy full plan</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── ABOUT ───── -->
+  <section class="about">
+    <div class="about-inner">
+      <h2>About RaiseKit</h2>
+      <p>RaiseKit helps student organizations and small nonprofits build practical fundraising plans fast. Instead of starting from scratch, users enter their org type, funding goal, and timeline to get a suggested strategy, outreach messaging, and a step-by-step execution plan.</p>
+      <p>The long-term vision is to expand into grant matching, donor segmentation, and fundraising workflow automation — giving mission-driven teams the infrastructure that larger organizations already have.</p>
+      <p class="built-by">Built by <strong><a href="https://github.com/Giancarla-Burgos" target="_blank" rel="noopener">Giancarla Burgos</a></strong> · Inspired by real experience in fundraising strategy, grant research, and donor communications.</p>
+    </div>
+  </section>
+
+  <!-- ───── ROADMAP ───── -->
+  <section class="roadmap">
+    <div class="roadmap-inner">
+      <h2>Roadmap</h2>
+      <p class="roadmap-sub">What RaiseKit becomes next.</p>
+      <ul class="roadmap-list">
+        <li><span class="roadmap-icon">🔍</span> Grant matching based on mission and eligibility</li>
+        <li><span class="roadmap-icon">📊</span> Donor segmentation from uploaded contact lists</li>
+        <li><span class="roadmap-icon">✍️</span> Personalized outreach generation per donor segment</li>
+        <li><span class="roadmap-icon">👥</span> Team collaboration dashboard for shared campaigns</li>
+        <li><span class="roadmap-icon">📆</span> Application and deadline tracker with reminders</li>
+        <li><span class="roadmap-icon">🔗</span> CRM integrations (Airtable, Google Sheets)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ───── FOOTER ───── -->
+  <footer class="footer">
+    <p>🚀 <strong>RaiseKit</strong> — A fundraising copilot for student orgs and small nonprofits.</p>
+    <p>Built by <a href="https://github.com/Giancarla-Burgos" target="_blank" rel="noopener">Giancarla Burgos</a> · <a href="https://github.com/Giancarla-Burgos/test-fundraising" target="_blank" rel="noopener">View on GitHub</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
