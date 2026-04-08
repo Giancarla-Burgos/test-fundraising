@@ -6,6 +6,7 @@
         <a href="/dashboard" class="nav-link">Dashboard</a>
         <a href="/generator" class="nav-link">Generator</a>
         <form action="/logout" method="POST" style="display:inline;">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
           <button type="submit" class="nav-link nav-link-btn">Log out</button>
         </form>
       <% } else { %>

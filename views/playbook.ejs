@@ -30,6 +30,7 @@
     <div class="action-row action-row-top" style="margin-top:24px;">
       <button class="btn-primary" id="copy-all-btn-top">📋 Copy Full Plan</button>
       <form action="/playbooks/<%= playbook.id %>/delete" method="POST" onsubmit="return confirm('Delete this playbook?');" style="flex:1;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button type="submit" class="btn-secondary" style="width:100%;">🗑 Delete Playbook</button>
       </form>
     </div>
@@ -109,7 +110,7 @@
 
     <!-- Bottom actions -->
     <div class="action-row">
-      <button class="btn-primary" id="copy-all-btn">📋 Copy full plan</button>
+      <button class="btn-primary" id="copy-all-btn">📋 Copy Full Plan</button>
       <a href="/dashboard" class="btn-secondary" style="text-align:center;">← Back to Dashboard</a>
     </div>
 

@@ -5,7 +5,12 @@
    and saves via /playbooks.
 ───────────────────────────────────────── */
 
-// ── Render helpers ──────────────────────────────────────────────────────────
+// ── CSRF helper ───────────────────────────────────────────────────────────
+
+function getCsrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.content : '';
+}
 
 function renderList(ulEl, items) {
   ulEl.innerHTML = '';
@@ -177,7 +182,10 @@ async function savePlan(plan, btnId) {
   try {
     const resp = await fetch('/playbooks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': getCsrfToken(),
+      },
       body: JSON.stringify(payload),
     });
     const data = await resp.json();
@@ -225,7 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const resp = await fetch('/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+          'X-CSRF-Token': getCsrfToken(),
+        },
         body: params.toString(),
       });
       const data = await resp.json();

@@ -118,6 +118,8 @@ router.post(
       }
       req.session.userId = user.id;
       req.session.userName = user.name;
+      // Generate a fresh CSRF token for the new session
+      req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
 
       const returnTo = req.session.returnTo || '/dashboard';
       delete req.session.returnTo;

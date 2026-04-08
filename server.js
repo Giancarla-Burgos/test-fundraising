@@ -6,12 +6,14 @@
  *   - Session-based authentication (express-session)
  *   - SQLite database via better-sqlite3
  *   - EJS server-side rendering
+ *   - CSRF protection via synchronizer token pattern (session-stored)
  *   - Routes: /, /signup, /login, /logout, /dashboard, /generator,
  *             /generate, /playbooks, /playbooks/:id, /playbooks/:id/delete
  */
 
 require('dotenv').config();
 
+const crypto = require('crypto');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -33,8 +35,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // ── Sessions ──────────────────────────────────────────────────────────────
-// NOTE: For production, also add a CSRF token middleware (e.g., csrf-csrf)
-//       before state-changing POST routes.
 app.use(
   session({
     store: new BetterSqlite3Store({ client: db }),
@@ -44,17 +44,51 @@ app.use(
     cookie: {
       httpOnly: true,                                    // Prevent JS access to the cookie
       secure: process.env.NODE_ENV === 'production',     // HTTPS-only in production
-      sameSite: 'lax',                                   // Basic CSRF protection
+      sameSite: 'lax',                                   // Blocks cross-site POST submissions
       maxAge: 7 * 24 * 60 * 60 * 1000,                  // 7 days
     },
   })
 );
+
+// ── CSRF protection — synchronizer token pattern ───────────────────────────
+// On every request, ensure a per-session CSRF token exists.
+// All state-changing requests (POST/PUT/PATCH/DELETE) must include this token
+// either as `_csrf` in the request body or as the `X-CSRF-Token` header.
+app.use((req, res, next) => {
+  // Initialize the session so we can set a CSRF token (needed for unauthenticated
+  // visitors who are about to submit the signup/login form).
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+  }
+
+  // Validate the token on state-changing methods.
+  const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  if (!safeMethods.includes(req.method)) {
+    const submitted =
+      (req.body && req.body._csrf) || req.headers['x-csrf-token'];
+    if (!submitted || submitted !== req.session.csrfToken) {
+      return res
+        .status(403)
+        .render('error', {
+          message: 'Form session expired. Please go back and try again.',
+          csrfToken: req.session.csrfToken || '',
+          currentUser: req.session.userId
+            ? { id: req.session.userId, name: req.session.userName }
+            : null,
+        });
+    }
+  }
+
+  next();
+});
 
 // ── Locals available to all views ─────────────────────────────────────────
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.userId
     ? { id: req.session.userId, name: req.session.userName }
     : null;
+  // Expose the CSRF token so every EJS template can embed it in forms and meta tags.
+  res.locals.csrfToken = req.session.csrfToken || '';
   next();
 });
 
