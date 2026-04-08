@@ -74,7 +74,20 @@ router.post(
       });
     } catch (err) {
       console.error('Signup error:', err);
-      res.render('signup', { errors: ['Sign up failed. Please try again.'], old });
+      // Surface a meaningful message so the user knows what went wrong
+      let message = 'Sign up failed. Please try again.';
+      if (err && err.message) {
+        if (err.message.includes('users') || err.message.includes('relation') || err.message.includes('table')) {
+          message = 'Database is not set up yet. The users table may be missing — please contact support.';
+        } else if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('ENOTFOUND') || err.message.includes('ECONNREFUSED')) {
+          message = 'Could not reach the database. Please check your connection and try again.';
+        } else if (err.message.includes('duplicate') || err.message.includes('unique')) {
+          message = 'An account with that email already exists.';
+        } else {
+          message = `Sign up failed: ${err.message}`;
+        }
+      }
+      res.render('signup', { errors: [message], old });
     }
   }
 );
@@ -110,7 +123,17 @@ router.post(
       user = await users.findByEmail(email);
     } catch (err) {
       console.error('Login DB error:', err);
-      return res.render('login', { errors: ['Login failed. Please try again.'], old });
+      let message = 'Login failed. Please try again.';
+      if (err && err.message) {
+        if (err.message.includes('users') || err.message.includes('relation') || err.message.includes('table')) {
+          message = 'Database is not set up yet. The users table may be missing — please contact support.';
+        } else if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('ENOTFOUND') || err.message.includes('ECONNREFUSED')) {
+          message = 'Could not reach the database. Please check your connection and try again.';
+        } else {
+          message = `Login failed: ${err.message}`;
+        }
+      }
+      return res.render('login', { errors: [message], old });
     }
 
     // Deliberate constant-time comparison even on missing user (prevents timing attacks)
