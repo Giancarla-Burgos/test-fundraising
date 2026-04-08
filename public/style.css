@@ -255,6 +255,7 @@ a:hover { text-decoration: underline; }
   border-radius: 8px;
   border: 1.5px solid var(--border);
   background: var(--white);
+  font-family: inherit;
   font-size: 0.95rem;
   color: var(--text);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -275,6 +276,7 @@ a:hover { text-decoration: underline; }
   border-radius: 8px;
   border: 1.5px solid var(--border);
   background: var(--white);
+  font-family: inherit;
   font-size: 0.95rem;
   color: var(--text);
   appearance: none;
