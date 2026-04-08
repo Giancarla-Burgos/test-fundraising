@@ -238,7 +238,17 @@ function renderTimeline(containerEl, weeks) {
   weeks.forEach(w => {
     const div = document.createElement('div');
     div.className = 'timeline-week';
-    div.innerHTML = `<div class="week-label">${w.label}</div><div class="week-tasks">${w.tasks}</div>`;
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'week-label';
+    labelEl.textContent = w.label;
+
+    const tasksEl = document.createElement('div');
+    tasksEl.className = 'week-tasks';
+    tasksEl.textContent = w.tasks;
+
+    div.appendChild(labelEl);
+    div.appendChild(tasksEl);
     containerEl.appendChild(div);
   });
 }
