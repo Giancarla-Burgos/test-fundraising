@@ -77,9 +77,7 @@ router.post(
       // Surface a meaningful message so the user knows what went wrong
       let message = 'Sign up failed. Please try again.';
       if (err && err.message) {
-        if (err.message.includes('users') || err.message.includes('relation') || err.message.includes('table')) {
-          message = 'Database is not set up yet. The users table may be missing — please contact support.';
-        } else if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('ENOTFOUND') || err.message.includes('ECONNREFUSED')) {
+        if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('ENOTFOUND') || err.message.includes('ECONNREFUSED')) {
           message = 'Could not reach the database. Please check your connection and try again.';
         } else if (err.message.includes('duplicate') || err.message.includes('unique')) {
           message = 'An account with that email already exists.';
@@ -125,9 +123,7 @@ router.post(
       console.error('Login DB error:', err);
       let message = 'Login failed. Please try again.';
       if (err && err.message) {
-        if (err.message.includes('users') || err.message.includes('relation') || err.message.includes('table')) {
-          message = 'Database is not set up yet. The users table may be missing — please contact support.';
-        } else if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('ENOTFOUND') || err.message.includes('ECONNREFUSED')) {
+        if (err.message.includes('network') || err.message.includes('fetch') || err.message.includes('ENOTFOUND') || err.message.includes('ECONNREFUSED')) {
           message = 'Could not reach the database. Please check your connection and try again.';
         } else {
           message = `Login failed: ${err.message}`;
