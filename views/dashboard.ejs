@@ -1,0 +1,106 @@
+<% const pageTitle = 'Dashboard' %>
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<div class="dashboard-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+      <div>
+        <div class="sidebar-name"><%= user.name %></div>
+        <div class="sidebar-email"><%= user.email %></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="sidebar-link sidebar-link-active">📋 My Playbooks</a>
+      <a href="/generator" class="sidebar-link">⚡ New Playbook</a>
+    </nav>
+    <div class="sidebar-footer">
+      <form action="/logout" method="POST">
+        <button type="submit" class="sidebar-logout">Log out</button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="dashboard-main">
+
+    <div class="dash-header">
+      <h1 class="dash-title">Welcome back, <%= user.name.split(' ')[0] %>! 👋</h1>
+      <a href="/generator" class="btn-primary">⚡ New Playbook</a>
+    </div>
+
+    <!-- Playbook list -->
+    <section class="dash-section">
+      <h2 class="dash-section-title">Your Playbooks</h2>
+
+      <% if (playbooks.length === 0) { %>
+        <div class="dash-empty">
+          <div class="empty-icon">📋</div>
+          <p>You haven't saved any playbooks yet.</p>
+          <a href="/generator" class="btn-primary" style="margin-top:16px;">Generate your first plan →</a>
+        </div>
+      <% } else { %>
+        <div class="playbook-grid">
+          <% playbooks.forEach(function(pb) { %>
+            <div class="playbook-card">
+              <div class="pb-card-meta">
+                <span class="pb-badge"><%= pb.org_type %></span>
+                <span class="pb-date"><%= new Date(pb.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+              </div>
+              <h3 class="pb-card-title">
+                <%= pb.org_type.charAt(0).toUpperCase() + pb.org_type.slice(1) %> ·
+                $<%= parseInt(pb.funding_goal).toLocaleString() %> ·
+                <%= pb.time_horizon %>
+              </h3>
+              <% if (pb.mission) { %>
+                <p class="pb-card-mission">"<%= pb.mission %>"</p>
+              <% } %>
+              <div class="pb-card-actions">
+                <a href="/playbooks/<%= pb.id %>" class="btn-secondary btn-sm">View playbook</a>
+                <form action="/playbooks/<%= pb.id %>/delete" method="POST" class="delete-form" onsubmit="return confirm('Delete this playbook?');">
+                  <button type="submit" class="btn-danger-sm">Delete</button>
+                </form>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- Roadmap teaser -->
+    <section class="dash-section">
+      <h2 class="dash-section-title">Coming soon</h2>
+      <div class="roadmap-cards">
+        <div class="roadmap-card roadmap-card-soon">
+          <span class="roadmap-card-icon">🔍</span>
+          <div>
+            <strong>Grant matching</strong>
+            <p>Find relevant grants based on your mission and eligibility.</p>
+          </div>
+        </div>
+        <div class="roadmap-card roadmap-card-soon">
+          <span class="roadmap-card-icon">📊</span>
+          <div>
+            <strong>Donor segmentation</strong>
+            <p>Upload a contact list and get personalized outreach for each segment.</p>
+          </div>
+        </div>
+        <div class="roadmap-card roadmap-card-soon">
+          <span class="roadmap-card-icon">📆</span>
+          <div>
+            <strong>Deadline tracker</strong>
+            <p>Never miss a grant application deadline again.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<%- include('partials/footer') %>
+</body>
+</html>

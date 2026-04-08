@@ -1,0 +1,17 @@
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">🚀 RaiseKit</a>
+    <div class="nav-links">
+      <% if (currentUser) { %>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/generator" class="nav-link">Generator</a>
+        <form action="/logout" method="POST" style="display:inline;">
+          <button type="submit" class="nav-link nav-link-btn">Log out</button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="nav-link">Log in</a>
+        <a href="/signup" class="btn-primary btn-sm">Sign up free</a>
+      <% } %>
+    </div>
+  </div>
+</nav>

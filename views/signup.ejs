@@ -1,0 +1,62 @@
+<% const pageTitle = 'Sign Up' %>
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<section class="auth-section">
+  <div class="auth-card">
+    <div class="auth-logo">🚀 RaiseKit</div>
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-sub">Free to use. No credit card required.</p>
+
+    <% if (errors.length > 0) { %>
+      <div class="alert alert-error">
+        <% errors.forEach(function(err) { %><p><%= err %></p><% }) %>
+      </div>
+    <% } %>
+
+    <form action="/signup" method="POST" class="auth-form">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value="<%= old.name || '' %>"
+          required
+          autocomplete="name"
+          placeholder="Your name"
+        />
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value="<%= old.email || '' %>"
+          required
+          autocomplete="email"
+          placeholder="you@example.com"
+        />
+      </div>
+      <div class="field">
+        <label for="password">Password <span class="field-hint">(min. 8 characters)</span></label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+          autocomplete="new-password"
+          placeholder="Create a password"
+        />
+      </div>
+      <button type="submit" class="btn-primary btn-full">Create account →</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
+</body>
+</html>
