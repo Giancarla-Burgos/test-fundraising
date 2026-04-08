@@ -335,7 +335,18 @@ a:hover { text-decoration: underline; }
 
 /* ── Top action row ── */
 .action-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
   margin-bottom: 28px;
+}
+
+.action-row-left {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .btn-outline {
@@ -349,7 +360,6 @@ a:hover { text-decoration: underline; }
   border: 1.5px solid var(--border);
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
-  flex: 1;
   text-align: center;
 }
 .btn-outline:hover {
@@ -701,6 +711,16 @@ a:hover { text-decoration: underline; }
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-top: 24px;
+}
+.auth-guest {
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+.auth-guest a {
+  color: var(--text-muted);
+}
+.auth-guest a:hover {
+  color: var(--accent);
 }
 .btn-full { width: 100%; text-align: center; }
 .field-hint { font-weight: 400; color: var(--text-muted); font-size: 0.82rem; }

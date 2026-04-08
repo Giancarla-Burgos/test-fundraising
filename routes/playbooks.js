@@ -33,13 +33,13 @@ const generatorValidation = [
 
 // ── Generator form ────────────────────────────────────────────────────────
 
-router.get('/generator', requireAuth, (req, res) => {
+router.get('/generator', (req, res) => {
   res.render('generator', { errors: [], plan: null, inputs: {} });
 });
 
 // ── Generate plan (AJAX / form POST) ─────────────────────────────────────
 
-router.post('/generate', requireAuth, generatorValidation, (req, res) => {
+router.post('/generate', generatorValidation, (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     if (req.headers.accept && req.headers.accept.includes('application/json')) {

@@ -118,7 +118,7 @@
     </div>
 
     <!-- Generated output -->
-    <div class="output hidden" id="output">
+    <div class="output hidden" id="output" data-logged-in="<%= currentUser ? 'true' : 'false' %>">
 
       <!-- Playbook header -->
       <div class="playbook-header">
@@ -131,8 +131,10 @@
 
       <!-- Top action row -->
       <div class="action-row action-row-top">
-        <button class="btn-primary" id="save-plan-btn">💾 Save to Dashboard</button>
-        <button class="btn-secondary" id="download-btn-top">⬇ Download as .txt</button>
+        <div class="action-row-left">
+          <button class="btn-primary" id="save-plan-btn">💾 Save to Dashboard</button>
+          <button class="btn-secondary" id="download-btn-top">⬇ Download as .txt</button>
+        </div>
         <button class="btn-outline" id="regenerate-btn">↺ Regenerate</button>
       </div>
 
