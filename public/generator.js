@@ -192,7 +192,7 @@ async function savePlan(plan, btnId) {
 
     if (resp.ok && data.success) {
       statusEl.className = 'save-status';
-      statusEl.textContent = '✅ Playbook saved! View it in your dashboard.';
+      statusEl.innerHTML = '✅ Playbook saved! <a href="/dashboard" style="color:inherit;font-weight:700;">Go to Dashboard →</a>';
       statusEl.classList.remove('hidden');
       btn.textContent = '✓ Saved';
       // Also update bottom button

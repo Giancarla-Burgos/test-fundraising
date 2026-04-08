@@ -248,7 +248,9 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 
-.field input[type="text"] {
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="password"] {
   padding: 11px 14px;
   border-radius: 8px;
   border: 1.5px solid var(--border);
@@ -257,8 +259,12 @@ a:hover { text-decoration: underline; }
   color: var(--text);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.field input[type="text"]::placeholder { color: #aaa; }
-.field input[type="text"]:focus {
+.field input[type="text"]::placeholder,
+.field input[type="email"]::placeholder,
+.field input[type="password"]::placeholder { color: #aaa; }
+.field input[type="text"]:focus,
+.field input[type="email"]:focus,
+.field input[type="password"]:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(91,94,244,0.12);
