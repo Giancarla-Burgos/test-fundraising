@@ -181,7 +181,7 @@ const GRANT_SETS = {
   ],
   campus: [
     '🎓 Student government association project grants',
-    '🏛 Dean's office or provost innovation grants',
+    "🏛 Dean's office or provost innovation grants",
     '📚 Academic department funding for programming',
     '🌍 Campus sustainability and social impact funds',
     '💡 Alumni association small grants for student projects',
@@ -351,10 +351,42 @@ function buildFullPlanText(inputs) {
   return lines.join('\n');
 }
 
+// ── Playbook subtitle ────────────────────────────────────────────────────────
+
+function getSubtitle(org, goal, timeline) {
+  const orgLabel = ORG_LABELS[org] || 'your organization';
+  const goalLabel = GOAL_LABELS[goal] || `$${goal}`;
+  const timeLabel = TIMELINE_LABELS[timeline] || timeline;
+  const lower = orgLabel.toLowerCase();
+  const article = /^[aeiou]/.test(lower) ? 'an' : 'a';
+  return `For ${article} ${lower} raising ${goalLabel} over ${timeLabel}`;
+}
+
 // ── Generate plan ────────────────────────────────────────────────────────────
 
 function generatePlan(inputs) {
   const { org, goal, timeline, priority, mission, stage } = inputs;
+
+  // Show loading state briefly
+  const emptyState = document.getElementById('empty-state');
+  const loadingState = document.getElementById('loading-state');
+  const output = document.getElementById('output');
+
+  emptyState.classList.add('hidden');
+  output.classList.add('hidden');
+  loadingState.classList.remove('hidden');
+
+  setTimeout(() => {
+    loadingState.classList.add('hidden');
+    _renderPlan(inputs);
+  }, 600);
+}
+
+function _renderPlan(inputs) {
+  const { org, goal, timeline, priority, mission, stage } = inputs;
+
+  // Playbook subtitle
+  document.getElementById('playbook-subtitle').textContent = getSubtitle(org, goal, timeline);
 
   // Fit badge
   document.getElementById('fit-badge').textContent = getFitBadge(org, timeline, parseInt(goal, 10));
@@ -386,6 +418,33 @@ function generatePlan(inputs) {
 
   // Store inputs for download/copy-all
   document.getElementById('output').dataset.inputs = JSON.stringify(inputs);
+}
+
+// ── Copy / download helpers ───────────────────────────────────────────────────
+
+function copyFullPlan(btnId, defaultLabel) {
+  const raw = document.getElementById('output').dataset.inputs;
+  if (!raw) return;
+  const inputs = JSON.parse(raw);
+  navigator.clipboard.writeText(buildFullPlanText(inputs)).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = defaultLabel; }, 2000);
+  });
+}
+
+function downloadFullPlan() {
+  const raw = document.getElementById('output').dataset.inputs;
+  if (!raw) return;
+  const inputs = JSON.parse(raw);
+  const text = buildFullPlanText(inputs);
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'raisekit-plan.txt';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── Event listeners ──────────────────────────────────────────────────────────
@@ -431,31 +490,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // Copy buttons
   setupCopyButtons();
 
-  // Copy full plan
+  // Copy full plan (bottom)
   document.getElementById('copy-all-btn').addEventListener('click', () => {
-    const raw = document.getElementById('output').dataset.inputs;
-    if (!raw) return;
-    const inputs = JSON.parse(raw);
-    navigator.clipboard.writeText(buildFullPlanText(inputs)).then(() => {
-      const btn = document.getElementById('copy-all-btn');
-      btn.textContent = '✓ Copied!';
-      setTimeout(() => { btn.textContent = '📋 Copy full plan'; }, 2000);
-    });
+    copyFullPlan('copy-all-btn', '📋 Copy full plan');
   });
 
-  // Download as .txt
-  document.getElementById('download-btn').addEventListener('click', () => {
+  // Copy full plan (top)
+  document.getElementById('copy-all-btn-top').addEventListener('click', () => {
+    copyFullPlan('copy-all-btn-top', '📋 Copy Full Plan');
+  });
+
+  // Download as .txt (bottom)
+  document.getElementById('download-btn').addEventListener('click', downloadFullPlan);
+
+  // Download as .txt (top)
+  document.getElementById('download-btn-top').addEventListener('click', downloadFullPlan);
+
+  // Regenerate
+  document.getElementById('regenerate-btn').addEventListener('click', () => {
     const raw = document.getElementById('output').dataset.inputs;
     if (!raw) return;
     const inputs = JSON.parse(raw);
-    const text = buildFullPlanText(inputs);
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'raisekit-plan.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    generatePlan(inputs);
   });
 
 });
